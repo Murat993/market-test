@@ -1,0 +1,58 @@
+version: "3.7"
+services:
+  app:
+    build:
+      context: docker
+      dockerfile: nginx/Dockerfile
+    ports:
+      - "8888:80"
+    volumes:
+      - .:/var/www
+    depends_on:
+      - php-fpm
+
+  php-fpm:
+    container_name: market_webserver
+    build:
+      context: docker
+      dockerfile: php-fpm/Dockerfile
+    volumes:
+      - .:/var/www
+    depends_on:
+      - redis
+      - db-mysql
+
+  node-cli:
+    build:
+      context: docker
+      dockerfile: node/Dockerfile
+    volumes:
+      - .:/var/www
+
+  db-mysql:
+    image: mysql:latest
+    container_name: market_db
+    restart: unless-stopped
+    command: [ '--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci','--default-authentication-plugin=mysql_native_password' ]
+    ports:
+      - "3300:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: mb2iBlIYhiXL
+      MYSQL_DATABASE: market
+      MYSQL_USER: market
+      MYSQL_PASSWORD: KeFRtOils
+    volumes:
+      - mysql-volume:/var/lib/mysql
+
+  redis:
+    image: redis
+    container_name: market_redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-volume:/data
+
+volumes:
+  mysql-volume:
+  redis-volume:
